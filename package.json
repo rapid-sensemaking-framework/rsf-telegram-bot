@@ -1,7 +1,7 @@
 {
-  "name": "rsf-telegramable",
-  "version": "1.0.7",
-  "description": "a module for exposing a very super simple API for sending/receiving telegram messages as an eventemitter",
+  "name": "rsf-telegram-bot",
+  "version": "0.0.1",
+  "description": "",
   "main": "index.js",
   "scripts": {
     "start": "NTBA_FIX_319=1 node index.js",
@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/rapid-sensemaking-framework/rsf-telegramable.git"
+    "url": "https://github.com/rapid-sensemaking-framework/rsf-telegram-bot.git"
   },
   "author": "",
   "license": "GPL-3.0",
