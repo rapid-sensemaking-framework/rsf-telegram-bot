@@ -44,25 +44,16 @@ dotenv.config();
 var protocol = require("./protocol");
 var telegramBot, mongoConnect, mongoClient;
 var io = socketIO(process.env.PORT);
-var socketsByUsername = {};
 io.on('connection', function (socket) {
-    var cacheUsername;
-    socket.on(protocol.RECEIVE_USERNAME, function (username) {
-        socketsByUsername[username] = {
-            username: username,
-            socket: socket
-        };
-        cacheUsername = username;
-    });
-    socket.on(protocol.SEND_MESSAGE, function (message) { return __awaiter(void 0, void 0, void 0, function () {
+    socket.on(protocol.SEND_MESSAGE, function (telegramMessage) { return __awaiter(void 0, void 0, void 0, function () {
         var chatId;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, getChatIdFromUsername(cacheUsername)];
+                case 0: return [4 /*yield*/, getChatIdFromUsername(telegramMessage.username)];
                 case 1:
                     chatId = _a.sent();
                     if (chatId) {
-                        telegramBot.sendMessage(chatId, message);
+                        telegramBot.sendMessage(chatId, telegramMessage.message);
                     }
                     else {
                         // TODO, queue this up?
@@ -73,7 +64,7 @@ io.on('connection', function (socket) {
         });
     }); });
     socket.on('disconnect', function () {
-        delete socketsByUsername[cacheUsername];
+        // 
     });
 });
 // telegram 'updates' seem to be transient
@@ -87,10 +78,12 @@ telegramBot = new TelegramBot(token, { polling: true });
 telegramBot.on('message', function (msg) {
     console.log('receiving telegram message from ' + msg.chat.username);
     setUsernameChatIdFromMessage(msg);
-    var contactable = socketsByUsername[msg.chat.username];
-    if (contactable) {
-        contactable.socket.emit(protocol.RECEIVE_MESSAGE, msg.text);
-    }
+    var telegramMessage = {
+        username: msg.chat.username,
+        message: msg.text
+    };
+    // send to all connected sockets
+    io.sockets.emit(protocol.RECEIVE_MESSAGE, telegramMessage);
 });
 // intentionally don't catch error
 var mongoOptions = {

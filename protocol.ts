@@ -1,10 +1,14 @@
 
-const RECEIVE_USERNAME = 'receive_username'
 const RECEIVE_MESSAGE = 'receive_message'
 const SEND_MESSAGE = 'send_message'
 
+interface TelegramMessage {
+  username: string
+  message: string
+}
+
 export {
   RECEIVE_MESSAGE,
-  RECEIVE_USERNAME,
-  SEND_MESSAGE
+  SEND_MESSAGE,
+  TelegramMessage
 }

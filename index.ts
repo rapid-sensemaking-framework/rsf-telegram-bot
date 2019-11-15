@@ -9,26 +9,12 @@ import * as protocol from './protocol'
 let telegramBot, mongoConnect, mongoClient
 const io = socketIO(process.env.PORT)
 
-interface ContactableSocket {
-  username: string
-  socket: socketIO.Socket
-}
-const socketsByUsername: { [username: string]: ContactableSocket } = {}
-
 io.on('connection', (socket) => {
-  let cacheUsername: string
-  socket.on(protocol.RECEIVE_USERNAME, (username: string) => {
-    socketsByUsername[username] = {
-      username,
-      socket
-    }
-    cacheUsername = username
-  })
 
-  socket.on(protocol.SEND_MESSAGE, async (message: string) => {
-    const chatId = await getChatIdFromUsername(cacheUsername)
+  socket.on(protocol.SEND_MESSAGE, async (telegramMessage: protocol.TelegramMessage) => {
+    const chatId = await getChatIdFromUsername(telegramMessage.username)
     if (chatId) {
-      telegramBot.sendMessage(chatId, message)
+      telegramBot.sendMessage(chatId, telegramMessage.message)
     } else {
       // TODO, queue this up?
       console.log('Tried to send message to ' + this.id + ' but did not have chat_id')
@@ -36,7 +22,7 @@ io.on('connection', (socket) => {
   })
 
   socket.on('disconnect', () => {
-    delete socketsByUsername[cacheUsername]
+    // 
   })
 })
 
@@ -54,11 +40,12 @@ telegramBot = new TelegramBot(token, { polling: true })
 telegramBot.on('message', (msg) => {
   console.log('receiving telegram message from ' + msg.chat.username)
   setUsernameChatIdFromMessage(msg)
-
-  const contactable = socketsByUsername[msg.chat.username]
-  if (contactable) {
-    contactable.socket.emit(protocol.RECEIVE_MESSAGE, msg.text)
+  const telegramMessage: protocol.TelegramMessage = {
+    username: msg.chat.username,
+    message: msg.text
   }
+  // send to all connected sockets
+  io.sockets.emit(protocol.RECEIVE_MESSAGE, telegramMessage)
 })
 
 // intentionally don't catch error
