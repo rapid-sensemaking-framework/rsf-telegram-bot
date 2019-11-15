@@ -4,25 +4,21 @@ import * as TelegramBot from 'node-telegram-bot-api'
 import { MongoClient } from 'mongodb'
 dotenv.config()
 
-import * as protocol from './protocol'
+import { SEND_MESSAGE, RECEIVE_MESSAGE, TelegramMessage } from './protocol'
 
 let telegramBot, mongoConnect, mongoClient
 const io = socketIO(process.env.PORT)
 
 io.on('connection', (socket) => {
-
-  socket.on(protocol.SEND_MESSAGE, async (telegramMessage: protocol.TelegramMessage) => {
-    const chatId = await getChatIdFromUsername(telegramMessage.username)
+  socket.on(SEND_MESSAGE, async (telegramMessage: TelegramMessage) => {
+    const { username, message } = telegramMessage
+    const chatId = await getChatIdFromUsername(username)
     if (chatId) {
-      telegramBot.sendMessage(chatId, telegramMessage.message)
+      telegramBot.sendMessage(chatId, message)
     } else {
       // TODO, queue this up?
       console.log('Tried to send message to ' + this.id + ' but did not have chat_id')
     }
-  })
-
-  socket.on('disconnect', () => {
-    // 
   })
 })
 
@@ -40,12 +36,12 @@ telegramBot = new TelegramBot(token, { polling: true })
 telegramBot.on('message', (msg) => {
   console.log('receiving telegram message from ' + msg.chat.username)
   setUsernameChatIdFromMessage(msg)
-  const telegramMessage: protocol.TelegramMessage = {
+  const telegramMessage: TelegramMessage = {
     username: msg.chat.username,
     message: msg.text
   }
   // send to all connected sockets
-  io.sockets.emit(protocol.RECEIVE_MESSAGE, telegramMessage)
+  io.sockets.emit(RECEIVE_MESSAGE, telegramMessage)
 })
 
 // intentionally don't catch error

@@ -41,19 +41,21 @@ var socketIO = require("socket.io");
 var TelegramBot = require("node-telegram-bot-api");
 var mongodb_1 = require("mongodb");
 dotenv.config();
-var protocol = require("./protocol");
+var protocol_1 = require("./protocol");
 var telegramBot, mongoConnect, mongoClient;
 var io = socketIO(process.env.PORT);
 io.on('connection', function (socket) {
-    socket.on(protocol.SEND_MESSAGE, function (telegramMessage) { return __awaiter(void 0, void 0, void 0, function () {
-        var chatId;
+    socket.on(protocol_1.SEND_MESSAGE, function (telegramMessage) { return __awaiter(void 0, void 0, void 0, function () {
+        var username, message, chatId;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, getChatIdFromUsername(telegramMessage.username)];
+                case 0:
+                    username = telegramMessage.username, message = telegramMessage.message;
+                    return [4 /*yield*/, getChatIdFromUsername(username)];
                 case 1:
                     chatId = _a.sent();
                     if (chatId) {
-                        telegramBot.sendMessage(chatId, telegramMessage.message);
+                        telegramBot.sendMessage(chatId, message);
                     }
                     else {
                         // TODO, queue this up?
@@ -63,9 +65,6 @@ io.on('connection', function (socket) {
             }
         });
     }); });
-    socket.on('disconnect', function () {
-        // 
-    });
 });
 // telegram 'updates' seem to be transient
 // ... if telegram thinks you have received that update
@@ -83,7 +82,7 @@ telegramBot.on('message', function (msg) {
         message: msg.text
     };
     // send to all connected sockets
-    io.sockets.emit(protocol.RECEIVE_MESSAGE, telegramMessage);
+    io.sockets.emit(protocol_1.RECEIVE_MESSAGE, telegramMessage);
 });
 // intentionally don't catch error
 var mongoOptions = {
