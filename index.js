@@ -45,7 +45,8 @@ var protocol_1 = require("./protocol");
 var telegramBot, mongoConnect, mongoClient;
 var io = socketIO(process.env.PORT);
 io.on('connection', function (socket) {
-    socket.on(protocol_1.SEND_MESSAGE, function (telegramMessage) { return __awaiter(void 0, void 0, void 0, function () {
+    console.log('received new websocket connection');
+    socket.on(protocol_1.SEND_MESSAGE, function (telegramMessage, cb) { return __awaiter(void 0, void 0, void 0, function () {
         var username, message, chatId;
         return __generator(this, function (_a) {
             switch (_a.label) {
@@ -55,7 +56,9 @@ io.on('connection', function (socket) {
                 case 1:
                     chatId = _a.sent();
                     if (chatId) {
-                        telegramBot.sendMessage(chatId, message);
+                        // this is a promise
+                        telegramBot.sendMessage(chatId, message)
+                            .then(function () { return cb('success'); })["catch"](function () { return cb('error'); });
                     }
                     else {
                         // TODO, queue this up?

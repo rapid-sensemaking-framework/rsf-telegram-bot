@@ -1,20 +1,24 @@
 import * as dotenv from 'dotenv'
 import * as socketIO from 'socket.io'
 import * as TelegramBot from 'node-telegram-bot-api'
-import { MongoClient } from 'mongodb'
+import { MongoClient, Db } from 'mongodb'
 dotenv.config()
 
 import { SEND_MESSAGE, RECEIVE_MESSAGE, TelegramMessage } from './protocol'
 
-let telegramBot, mongoConnect, mongoClient
+let telegramBot, mongoConnect: MongoClient, mongoClient: Db
 const io = socketIO(process.env.PORT)
 
 io.on('connection', (socket) => {
-  socket.on(SEND_MESSAGE, async (telegramMessage: TelegramMessage) => {
+  console.log('received new websocket connection')
+  socket.on(SEND_MESSAGE, async (telegramMessage: TelegramMessage, cb: (status: string) => void) => {
     const { username, message } = telegramMessage
     const chatId = await getChatIdFromUsername(username)
     if (chatId) {
+      // this is a promise
       telegramBot.sendMessage(chatId, message)
+        .then(() => cb('success'))
+        .catch(() => cb('error'))
     } else {
       // TODO, queue this up?
       console.log('Tried to send message to ' + this.id + ' but did not have chat_id')
