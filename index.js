@@ -41,6 +41,7 @@ var socketIO = require("socket.io");
 var TelegramBot = require("node-telegram-bot-api");
 var mongodb_1 = require("mongodb");
 dotenv.config();
+var sound_1 = require("./sound");
 var protocol_1 = require("./protocol");
 var telegramBot, mongoConnect, mongoClient;
 var io = socketIO(process.env.PORT);
@@ -77,16 +78,42 @@ var mongoUri = process.env.MONGODB_URI;
 var dbName = process.env.MONGODB_NAME;
 telegramBot = new TelegramBot(token, { polling: true });
 // forward messages over the appropriate event on the eventBus
-telegramBot.on('message', function (msg) {
-    console.log('receiving telegram message from ' + msg.chat.username);
-    setUsernameChatIdFromMessage(msg);
-    var telegramMessage = {
-        username: msg.chat.username,
-        message: msg.text
-    };
-    // send to all connected sockets
-    io.sockets.emit(protocol_1.RECEIVE_MESSAGE, telegramMessage);
-});
+function receiveMessage(msg) {
+    return __awaiter(this, void 0, void 0, function () {
+        var message, e_1, telegramMessage;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    console.log('receiving telegram message from ' + msg.chat.username);
+                    setUsernameChatIdFromMessage(msg);
+                    message = msg.text;
+                    if (!(!message && msg.voice)) return [3 /*break*/, 4];
+                    _a.label = 1;
+                case 1:
+                    _a.trys.push([1, 3, , 4]);
+                    return [4 /*yield*/, sound_1.speechToText(telegramBot, msg)];
+                case 2:
+                    message = _a.sent();
+                    return [3 /*break*/, 4];
+                case 3:
+                    e_1 = _a.sent();
+                    console.log('tried to convert speech to text, but encountered error: ', e_1);
+                    return [3 /*break*/, 4];
+                case 4:
+                    if (!message)
+                        return [2 /*return*/];
+                    telegramMessage = {
+                        username: msg.chat.username,
+                        message: msg.text
+                    };
+                    // send to all connected sockets
+                    io.sockets.emit(protocol_1.RECEIVE_MESSAGE, telegramMessage);
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+telegramBot.on('message', receiveMessage);
 // intentionally don't catch error
 var mongoOptions = {
     useUnifiedTopology: true,

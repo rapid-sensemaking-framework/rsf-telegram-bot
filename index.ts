@@ -4,6 +4,9 @@ import * as TelegramBot from 'node-telegram-bot-api'
 import { MongoClient, Db } from 'mongodb'
 dotenv.config()
 
+import {
+  speechToText
+} from './sound'
 import { SEND_MESSAGE, RECEIVE_MESSAGE, TelegramMessage } from './protocol'
 
 let telegramBot, mongoConnect: MongoClient, mongoClient: Db
@@ -37,16 +40,28 @@ const dbName = process.env.MONGODB_NAME
 telegramBot = new TelegramBot(token, { polling: true })
 
 // forward messages over the appropriate event on the eventBus
-telegramBot.on('message', (msg) => {
+async function receiveMessage (msg): Promise<void> {
   console.log('receiving telegram message from ' + msg.chat.username)
   setUsernameChatIdFromMessage(msg)
+  
+  let message = msg.text
+  if (!message && msg.voice) {
+    try {
+      message = await speechToText(telegramBot, msg)
+    } catch (e) {
+      console.log('tried to convert speech to text, but encountered error: ', e)
+    }
+  }
+  if (!message) return
+
   const telegramMessage: TelegramMessage = {
     username: msg.chat.username,
     message: msg.text
   }
   // send to all connected sockets
   io.sockets.emit(RECEIVE_MESSAGE, telegramMessage)
-})
+}
+telegramBot.on('message', receiveMessage)
 
 // intentionally don't catch error
 const mongoOptions = {
