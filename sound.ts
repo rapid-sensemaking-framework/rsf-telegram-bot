@@ -47,6 +47,9 @@ function convertAudio(buffer: Buffer): Promise<Buffer> {
         type: 'raw'
       }
     })
+    soxConverter.on('error', (e: Error) => {
+      reject(e)
+    })
     bufferToStream(buffer)
       .pipe(soxConverter)
       .pipe(audioStream)

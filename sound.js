@@ -80,6 +80,9 @@ function convertAudio(buffer) {
                 type: 'raw'
             }
         });
+        soxConverter.on('error', function (e) {
+            reject(e);
+        });
         bufferToStream(buffer)
             .pipe(soxConverter)
             .pipe(audioStream);
