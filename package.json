@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "NTBA_FIX_319=1 node index.js",
+    "start": "npm run build && npm run fetch-models && NTBA_FIX_319=1 node index.js",
     "build": "tsc --build",
-    "build-watch": "tsc --build --watch"
+    "build-watch": "tsc --build --watch",
+    "fetch-models": "node fetch-models.js"
   },
   "repository": {
     "type": "git",
@@ -18,10 +19,17 @@
     "@types/mongodb": "^3.3.10",
     "@types/node": "^12.12.7",
     "@types/socket.io": "^2.1.4",
+    "cli-progress": "^3.2.0",
+    "concat-stream": "^2.0.0",
+    "deepspeech": "^0.6.0",
     "dotenv": "^8.2.0",
+    "memory-stream": "^1.0.0",
     "mongodb": "^3.3.2",
+    "node-tar.gz": "^1.0.0",
     "node-telegram-bot-api": "^0.30.0",
+    "request": "^2.88.0",
     "socket.io": "^2.3.0",
+    "sox-stream": "^2.0.3",
     "typescript": "^3.7.2"
   }
 }

@@ -5,6 +5,8 @@
   },
   "files": [
     "index.ts",
-    "protocol.ts"
+    "protocol.ts",
+    "sound.ts",
+    "fetch-models.ts"
   ]
 }

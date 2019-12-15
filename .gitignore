@@ -1,3 +1,9 @@
+models
+packed-models.tar.gz
+*.d.ts
+*.js
+**/.DS_Store
+
 # Logs
 logs
 *.log
