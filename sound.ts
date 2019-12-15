@@ -4,14 +4,16 @@ import * as Sox from 'sox-stream'
 import * as MemoryStream from 'memory-stream'
 import { Duplex } from 'stream'
 
+const modelsFolder = './models/deepspeech-0.6.0-models'
+
 const BEAM_WIDTH = 1024
-let modelPath = './models/output_graph.pbmm'
+let modelPath = `${modelsFolder}/output_graph.pbmm`
 let model = new DeepSpeech.Model(modelPath, BEAM_WIDTH)
 let desiredSampleRate = model.sampleRate()
 const LM_ALPHA = 0.75
 const LM_BETA = 1.85
-let lmPath = './models/lm.binary'
-let triePath = './models/trie'
+let lmPath = `${modelsFolder}/lm.binary`
+let triePath = `${modelsFolder}/trie`
 // set up the model
 model.enableDecoderWithLM(lmPath, triePath, LM_ALPHA, LM_BETA)
 
