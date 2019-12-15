@@ -49,16 +49,21 @@ const download = (url: string, filename: string, callback: any) => {
 const fileUrl = `https://github.com/mozilla/DeepSpeech/releases/download/v0.6.0/deepspeech-0.6.0-models.tar.gz`
 const fileName = 'packed-models.tar.gz'
 const unpackedFolder = 'models'
-download(fileUrl, fileName, () => {
-  // unpack
-  console.log('finished downloading, will now unpack')
-  targz()
-    .extract(fileName, unpackedFolder)
-    .then(function(){
-      console.log('Successfully unpacked and created "models" folder.');
-    })
-    .catch(function(err){
-      console.log('Unpacking failed ', err.stack)
-      process.exit(1)
-    })
-})
+
+if (!fs.existsSync(`./${unpackedFolder}`)) {
+  download(fileUrl, fileName, () => {
+    // unpack
+    console.log('finished downloading, will now unpack')
+    targz()
+      .extract(fileName, unpackedFolder)
+      .then(function(){
+        console.log('Successfully unpacked and created "models" folder.');
+      })
+      .catch(function(err){
+        console.log('Unpacking failed ', err.stack)
+        process.exit(1)
+      })
+  })
+} else {
+  console.log('models folder already exists, skipping...')
+}
