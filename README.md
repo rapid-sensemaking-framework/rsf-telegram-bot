@@ -22,7 +22,7 @@ npm start
 
 You will need a [telegram bot](https://core.telegram.org/bots#6-botfather) and its auth token.
 
-You will need to install `mongodb`.
+You will need to install `mongodb`. The mongo database will persist the IDs of chat threads with users, so that the bot will be able to message with them, even after it restarts. This is because the bot can only send messages to users whose chat IDs it already knows, the user having already messaged it.
 
 Create a `.env` file, and the following environment variables can be set.
 ```
